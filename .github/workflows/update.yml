@@ -21,9 +21,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install bs4 requests pandas dicttoxml tabulate
-          python -m pip install xmltodict
-
+          pip install bs4 requests pandas dicttoxml tabulate xmltodict
       - name: Run Script
         run: python app.py
 
@@ -32,4 +30,4 @@ jobs:
         with:
           default_author: github_actions
           message: "Update data"
-          add: "data/*.csv"
+          add: "./*"
