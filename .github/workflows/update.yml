@@ -21,7 +21,8 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install bs4 requests pandas dicttoxml xml2dict tabulate
+          pip install bs4 requests pandas dicttoxml tabulate
+          python -m pip install xml2dict
 
       - name: Run Script
         run: python app.py
