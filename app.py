@@ -126,7 +126,7 @@ class MubasherAPI:
     def ListCompanies(self):
       table = tabulate([[company["symbol"],company["name"]]for company in self.dataBase.values()], headers=['Symbol', 'Name'], tablefmt='orgtbl')
       print(table)
-      def ListCountries(self):
+    def ListCountries(self):
       table = tabulate([["eg","Egypt"],
                         ["sa","Saudi Arabia"],
                         ["ae","Emirates"],
