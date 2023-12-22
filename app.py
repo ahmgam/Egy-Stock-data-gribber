@@ -29,10 +29,6 @@ class MubasherAPI :
       raise ValueError("wrong country code, please use listCountries to see available country codes")
     return country
 
-  def _clearOutput(self):
-    for _ in range (10):
-      clear_output(wait=True)
-
   def _GetCompanies(self):
     currentPage = 0
     allPages = 20
@@ -44,7 +40,7 @@ class MubasherAPI :
       response = r.json()
       allPages =int(response["numberOfPages"])
       for i in range(len(response["rows"])):
-        self._clearOutput()
+        
         company=response["rows"][i]
         print("importing companies :" + str(i+currentPage*pageSize)+"/"+str(companiesNumber))
         dataElement = {"name":company["name"],
@@ -58,7 +54,7 @@ class MubasherAPI :
       os.mkdir(self.CompaniesDirectory)
     with open(self.outputFile , "w") as file_object:
       file_object.write(xmlData)
-    self._clearOutput()
+    
     print("Import complete, saved to : "+self.outputFile )
 
   def DownloadHistorical(self,company):
@@ -75,9 +71,9 @@ class MubasherAPI :
 
     for company in self.dataBase.values():
       self.DownloadHistorical(company)
-      self._clearOutput()
+      
       print(company["symbol"]+" data downloaded")
-    self._clearOutput()
+    
     print("All historical data downloaded successfully to "+ self.HistoricalDirectory)
     self.dataDownloaded=True
 
