@@ -74,157 +74,157 @@ class MubasherAPI:
         self.dataDownloaded = True
 
     def getHistoricalFileWithApi(self,symbol):
-    company_data = requests.get(f"{self.HostURL}{self.performanceApi}{symbol}").json()
-    company = None
-    for c in company_data:
-      if c["code"] == symbol:
-        company = c
-        break
-    if company is None:
-      return None
-    else:
-      return company["historicalFile"]
+      company_data = requests.get(f"{self.HostURL}{self.performanceApi}{symbol}").json()
+      company = None
+      for c in company_data:
+        if c["code"] == symbol:
+          company = c
+          break
+      if company is None:
+        return None
+      else:
+        return company["historicalFile"]
 
 
     def getHistoricalFileWithScraping(self,url):
-    html_doc =requests.get(self.HostURL+url)
-    bs = BeautifulSoup(html_doc.text, "html.parser")
-    historical_file = None
-    for item in bs.find_all(lambda tag: any(isinstance(attr, str) and attr.endswith('.csv') for attr in tag.attrs.values())):
-      if "historical-data-url" in item.attrs:
-        historical_file= item["historical-data-url"]
-    return historical_file
+      html_doc =requests.get(self.HostURL+url)
+      bs = BeautifulSoup(html_doc.text, "html.parser")
+      historical_file = None
+      for item in bs.find_all(lambda tag: any(isinstance(attr, str) and attr.endswith('.csv') for attr in tag.attrs.values())):
+        if "historical-data-url" in item.attrs:
+          historical_file= item["historical-data-url"]
+      return historical_file
 
     def getHistoricalFile(self,company):
-    historical_file = self.getHistoricalFileWithApi(company["symbol"])
-    if not historical_file:
-      historical_file = self.getHistoricalFileWithScraping(company["url"])
-    if historical_file is None:
-      raise Exception(f"Historical data for company with symbol {company['symbol']} cannot be imported")
-    return historical_file
+      historical_file = self.getHistoricalFileWithApi(company["symbol"])
+      if not historical_file:
+        historical_file = self.getHistoricalFileWithScraping(company["url"])
+      if historical_file is None:
+        raise Exception(f"Historical data for company with symbol {company['symbol']} cannot be imported")
+      return historical_file
 
     
     def LoadCompaines(self):
-        self._ensure_directory(self.CompaniesDirectory)  # Ensure the directory exists before loading
-        if not (os.path.exists(self.outputFile)):
-            print("Companies data has not been downloaded yet, starting downloading ..")
-            self._GetCompanies()
-        f = open(self.outputFile, 'r')
-        raw_data = f.read()
-        self.dataBase = {}
-        for item in xmltodict.parse(raw_data)["root"]["item"]:
-            self.dataBase[item["symbol"]["#text"]] = {"name": item["name"]["#text"],
-                                                     "symbol": item["symbol"]["#text"],
-                                                     "url": item["url"]["#text"],
-                                                     "csv": item["csv"]["#text"]}
-        print("Companies data loaded successfully!")
+      self._ensure_directory(self.CompaniesDirectory)  # Ensure the directory exists before loading
+      if not (os.path.exists(self.outputFile)):
+          print("Companies data has not been downloaded yet, starting downloading ..")
+          self._GetCompanies()
+      f = open(self.outputFile, 'r')
+      raw_data = f.read()
+      self.dataBase = {}
+      for item in xmltodict.parse(raw_data)["root"]["item"]:
+          self.dataBase[item["symbol"]["#text"]] = {"name": item["name"]["#text"],
+                                                    "symbol": item["symbol"]["#text"],
+                                                    "url": item["url"]["#text"],
+                                                    "csv": item["csv"]["#text"]}
+      print("Companies data loaded successfully!")
 
     def UpdatePrices(self):
-    self.lastPrices = requests.get(self.HostURL+self.PricesAPI,{"country": self.country}).json()
-    print("Prices updated successfully to date " + self.lastPrices["lastUpdate"])
+      self.lastPrices = requests.get(self.HostURL+self.PricesAPI,{"country": self.country}).json()
+      print("Prices updated successfully to date " + self.lastPrices["lastUpdate"])
 
     def ListCompanies(self):
-    table = tabulate([[company["symbol"],company["name"]]for company in self.dataBase.values()], headers=['Symbol', 'Name'], tablefmt='orgtbl')
-    print(table)
-    def ListCountries(self):
-    table = tabulate([["eg","Egypt"],
-                      ["sa","Saudi Arabia"],
-                      ["ae","Emirates"],
-                      ["qa","Qatar"],
-                      ["bh","Bahrin"],
-                      ["om","Oman"],
-                      ["kw","Kuwait"],
-                      ["jo","Jordan"],
-                      ["tn","Tunisia"],
-                      ["ma","Morocco"],
-                      ["ps","Palestine"],
-                      ["iq","Iraq"]], headers=['Symbol', 'Name'], tablefmt='orgtbl')
-    print(table)
+      table = tabulate([[company["symbol"],company["name"]]for company in self.dataBase.values()], headers=['Symbol', 'Name'], tablefmt='orgtbl')
+      print(table)
+      def ListCountries(self):
+      table = tabulate([["eg","Egypt"],
+                        ["sa","Saudi Arabia"],
+                        ["ae","Emirates"],
+                        ["qa","Qatar"],
+                        ["bh","Bahrin"],
+                        ["om","Oman"],
+                        ["kw","Kuwait"],
+                        ["jo","Jordan"],
+                        ["tn","Tunisia"],
+                        ["ma","Morocco"],
+                        ["ps","Palestine"],
+                        ["iq","Iraq"]], headers=['Symbol', 'Name'], tablefmt='orgtbl')
+      print(table)
 
 
     def GetHistoricalData(self,code,startDate,endDate):
 
-    if self.dataDownloaded:
-      Data=pd.read_csv(self.HistoricalDirectory+self.country+"/"+code+".csv",header=None)
-    else :
-      Data=pd.read_csv(self._GetCompanyByCode(code)["csv"],header=None)
+      if self.dataDownloaded:
+        Data=pd.read_csv(self.HistoricalDirectory+self.country+"/"+code+".csv",header=None)
+      else :
+        Data=pd.read_csv(self._GetCompanyByCode(code)["csv"],header=None)
 
-    startDate =self._FormatDate(startDate)
-    endDate = self._FormatDate(endDate)
-    higher_index = Data[Data[0]==endDate]
-    lower_index =Data[Data[0]==startDate]
-    if lower_index.empty :
-      assert print("there is no record for selected start date, please select another date")
-    if higher_index.empty:
-      assert print ("there is no record for selected end date, please select another date")
-    higher_index = higher_index.index[0]
-    lower_index =lower_index.index[0]
-    return Data[lower_index:higher_index].values.tolist()
+      startDate =self._FormatDate(startDate)
+      endDate = self._FormatDate(endDate)
+      higher_index = Data[Data[0]==endDate]
+      lower_index =Data[Data[0]==startDate]
+      if lower_index.empty :
+        assert print("there is no record for selected start date, please select another date")
+      if higher_index.empty:
+        assert print ("there is no record for selected end date, please select another date")
+      higher_index = higher_index.index[0]
+      lower_index =lower_index.index[0]
+      return Data[lower_index:higher_index].values.tolist()
 
 
     def _GetCompanyByCode(self,code,no_assert=False):
-    if self.dataBase.keys().get(code,None)!= None:
-      return self.dataBase[code]
-    if no_assert:
-      return None
-    assert print("Invalid company code, please enter a valid company code")
-    def _FormatDate ( self,dateToFormat):
+      if self.dataBase.keys().get(code,None)!= None:
+        return self.dataBase[code]
+      if no_assert:
+        return None
+      assert print("Invalid company code, please enter a valid company code")
+      def _FormatDate ( self,dateToFormat):
 
-    dateArray = dateToFormat.split("-")
-    try:
-      returnDate = datetime.datetime(int(dateArray[0]),
-                              int(dateArray[1]),
-                              int(dateArray[2])).strftime("%Y-%m-%d/%H:%M:%S")
-    except :
-      assert print ("Invalid date format, please enter a valid date")
-    return returnDate
+      dateArray = dateToFormat.split("-")
+      try:
+        returnDate = datetime.datetime(int(dateArray[0]),
+                                int(dateArray[1]),
+                                int(dateArray[2])).strftime("%Y-%m-%d/%H:%M:%S")
+      except :
+        assert print ("Invalid date format, please enter a valid date")
+      return returnDate
 
     def SelectCountry(self,contry):
-    pass
-    if not contry in ["eg","sa","ae","bh","qa","om"]:
-      assert print("please select a valid country")
-    self.country = country
-    self.outputFile =self.CompaniesDirectory+ "companies_database_"+ country+".xml"
-    self.HistoricalDirectory = self.ROOT+"historical_data/"+country+"/"
-    print("country set to "+country+ ", now getting new selection companies ..")
-    self.LoadCompaines()
+      pass
+      if not contry in ["eg","sa","ae","bh","qa","om"]:
+        assert print("please select a valid country")
+      self.country = country
+      self.outputFile =self.CompaniesDirectory+ "companies_database_"+ country+".xml"
+      self.HistoricalDirectory = self.ROOT+"historical_data/"+country+"/"
+      print("country set to "+country+ ", now getting new selection companies ..")
+      self.LoadCompaines()
 
     def PlotData(dataToPlot):
-    fig = go.Figure(data=[go.Candlestick(x=dataToPlot[:][0],
-                open=dataToPlot[:][1],
-                high=dataToPlot[:][2],
-                low=dataToPlot[:][3],
-                close=dataToPlot[:][4])])
+      fig = go.Figure(data=[go.Candlestick(x=dataToPlot[:][0],
+                  open=dataToPlot[:][1],
+                  high=dataToPlot[:][2],
+                  low=dataToPlot[:][3],
+                  close=dataToPlot[:][4])])
 
-    fig.show()
+      fig.show()
 
     def getAllPrices(self,country):
-    response = requests.get(self.HostURL+self.PricesAPI,{"country": self.country}).json()
-    date = response['lastUpdate']
-    data = {'date':date,'prices':{}}
-    for company in response['prices']:
-      data['prices'][company['code']]= [company['open'],company['high'],company['low'],company['value'],company['volume']]
-    return data
+      response = requests.get(self.HostURL+self.PricesAPI,{"country": self.country}).json()
+      date = response['lastUpdate']
+      data = {'date':date,'prices':{}}
+      for company in response['prices']:
+        data['prices'][company['code']]= [company['open'],company['high'],company['low'],company['value'],company['volume']]
+      return data
 
     def updateCompanies(self):
-    #get all prices first
-    data = self.getAllPrices(self.country)
-    for code,price in data['prices'].items():
-      #check if file exists
-      if not os.path.exists(self.HistoricalDirectory+self.country+"/"+code+".csv"):
-        if not self._GetCompanyByCode(code,no_assert=True):
-          continue
-        self.DownloadHistorical(self.dataBase[code])
+      #get all prices first
+      data = self.getAllPrices(self.country)
+      for code,price in data['prices'].items():
+        #check if file exists
+        if not os.path.exists(self.HistoricalDirectory+self.country+"/"+code+".csv"):
+          if not self._GetCompanyByCode(code,no_assert=True):
+            continue
+          self.DownloadHistorical(self.dataBase[code])
 
-      df = pd.read_csv(
-          self.HistoricalDirectory+self.country+"/"+code+".csv", header=None)
-      df.columns =['date','open','high','low','close','volume']
+        df = pd.read_csv(
+            self.HistoricalDirectory+self.country+"/"+code+".csv", header=None)
+        df.columns =['date','open','high','low','close','volume']
 
-      if data['date'] in df['date'].values:
-        df.loc[df['date'] == data['date'], :] = price
-      else:
-        df = df.append(pd.Series(price, name=data['date']), ignore_index=True)
-      df.to_csv(self.HistoricalDirectory+self.country+"/"+code+".csv", index=False)
+        if data['date'] in df['date'].values:
+          df.loc[df['date'] == data['date'], :] = price
+        else:
+          df = df.append(pd.Series(price, name=data['date']), ignore_index=True)
+        df.to_csv(self.HistoricalDirectory+self.country+"/"+code+".csv", index=False)
 
 
 if __name__ == "__main__":
