@@ -209,35 +209,25 @@ class MubasherAPI :
     return data
 
   def updateCompanies(self):
-    # Get all prices first
+    #get all prices first
     data = self.getAllPrices(self.country)
-    for code, price in data['prices'].items():
-        # Check if file exists for the company code
-        if not os.path.exists(self.HistoricalDirectory+self.country+"/"+code+".csv"):
-            if not self._GetCompanyByCode(code, no_assert=True):
-                continue  # Skip if no company data is found for the code
-            self.DownloadHistorical(self.dataBase[code])
+    for code,price in data['prices'].items():
+      #check if file exists
+      if not os.path.exists(self.HistoricalDirectory+self.country+"/"+code+".csv"):
+        if not self._GetCompanyByCode(code,no_assert=True):
+          continue
+        self.DownloadHistorical(self.dataBase[code])
 
-        # Load the company's historical data into a DataFrame
-        df = pd.read_csv(self.HistoricalDirectory+self.country+"/"+code+".csv", header=None)
-        df.columns = ['date', 'open', 'high', 'low', 'close', 'volume']
+      df = pd.read_csv(
+          self.HistoricalDirectory+self.country+"/"+code+".csv", header=None)
+      df.columns =['date','open','high','low','close','volume']
 
-        # Ensure df is indeed a DataFrame and then append or update it
-        if isinstance(df, pd.DataFrame):
-            # Create a new row from the price data
-            new_row = pd.Series(price, index=df.columns, name=data['date'])
-            # Check if the date already exists in the DataFrame
-            if data['date'] in df['date'].values:
-                # Update the existing row with new price data
-                df.loc[df['date'] == data['date'], :] = new_row
-            else:
-                # Append the new row with price data
-                df = df.append(new_row, ignore_index=True)
-        else:
-            print(f"Expected df to be a DataFrame but got {type(df)}")
+      if data['date'] in df['date'].values:
+        df.loc[df['date'] == data['date'], :] = price
+      else:
+        df = df.append(pd.Series(price, name=data['date']), ignore_index=True)
+      df.to_csv(self.HistoricalDirectory+self.country+"/"+code+".csv", index=False)
 
-        # Save the updated data back to the CSV
-        df.to_csv(self.HistoricalDirectory+self.country+"/"+code+".csv", index=False)
 
     print("Companies updated successfully.")
 
