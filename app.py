@@ -162,13 +162,14 @@ class MubasherAPI :
     lower_index =lower_index.index[0]
     return Data[lower_index:higher_index].values.tolist()
 
-
-  def _GetCompanyByCode(self,code,no_assert=False):
-    if self.dataBase.keys().get(code,None)!= None:
-      return self.dataBase[code]
+  def _GetCompanyByCode(self, code, no_assert=False):
+    if code in self.dataBase:  # Use 'in' directly on the dictionary
+        return self.dataBase[code]
     if no_assert:
-      return None
+        return None
     assert print("Invalid company code, please enter a valid company code")
+
+    
   def _FormatDate ( self,dateToFormat):
 
     dateArray = dateToFormat.split("-")
