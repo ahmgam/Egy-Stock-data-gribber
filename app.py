@@ -4,7 +4,7 @@ import datetime
 import os
 from dicttoxml import dicttoxml
 from xml.dom.minidom import parseString
-import xml2dict
+import xmltodict
 from tabulate import tabulate
 import pandas as pd
 
@@ -114,7 +114,7 @@ class MubasherAPI :
     f = open(self.outputFile,'r')
     raw_data = f.read()
     self.dataBase={}
-    for item in xml2dict.parse (raw_data)["root"]["item"]:
+    for item in xmltodict.parse (raw_data)["root"]["item"]:
       self.dataBase[item["symbol"]["#text"]]={"name":item["name"]["#text"],
                           "symbol":item["symbol"]["#text"],
                           "url":item["url"]["#text"],
