@@ -117,23 +117,23 @@ class MubasherAPI :
                                                   "url": item["url"]["#text"],
                                                   "csv": item["csv"]["#text"]}
 
-  def updateCompanies(self):
-      if not self.dataDownloaded:
-          self.DownloadAllHistorical()
-      for company in self.dataBase.values():
-          print("Updating company :" + company["symbol"])
-          csvFilePath = self.HistoricalDirectory + self.country + "/" + company["symbol"] + ".csv"
-          if not os.path.exists(csvFilePath):
-              print("Unable to find historical data for company :" + company["symbol"])
-              continue
-          csvData = pd.read_csv(csvFilePath, parse_dates=[0], index_col=0)
-          lastPrice = csvData.iloc[-1]['Close']
-          company['lastPrice'] = lastPrice
-          self.lastPrices[company["symbol"]] = lastPrice
+    def updateCompanies(self):
+        if not self.dataDownloaded:
+            self.DownloadAllHistorical()
+        for company in self.dataBase.values():
+            print("Updating company :" + company["symbol"])
+            csvFilePath = self.HistoricalDirectory + self.country + "/" + company["symbol"] + ".csv"
+            if not os.path.exists(csvFilePath):
+                print("Unable to find historical data for company :" + company["symbol"])
+                continue
+            csvData = pd.read_csv(csvFilePath, parse_dates=[0], index_col=0)
+            lastPrice = csvData.iloc[-1]['Close']
+            company['lastPrice'] = lastPrice
+            self.lastPrices[company["symbol"]] = lastPrice
 
-  def printCompanies(self):
-      for company in self.dataBase.values():
-          print(company)
+    def printCompanies(self):
+        for company in self.dataBase.values():
+            print(company)
 
 if __name__ == "__main__":
    myapi = MubasherAPI("eg")
