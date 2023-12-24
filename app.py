@@ -49,7 +49,7 @@ class MubasherAPI :
             currentPage = currentPage + 1
         xmlData = dicttoxml(self.dataBase.values()).decode()
         if not (os.path.exists(self.CompaniesDirectory)):
-            os.mkdir(self.CompaniesDirectory)
+            os.makedirs(self.CompaniesDirectory, exist_ok=True)
         with open(self.outputFile, "w") as file_object:
             file_object.write(xmlData)
 
@@ -57,14 +57,14 @@ class MubasherAPI :
 
     def DownloadHistorical(self, company):
         if not (os.path.exists(self.HistoricalDirectory)):
-            os.mkdir(self.HistoricalDirectory)
+            os.makedirs(self.HistoricalDirectory, exist_ok=True)
             os.mkdir(self.HistoricalDirectory + self.country + "/")
         r = requests.get(company["csv"], allow_redirects=True)
         open(self.HistoricalDirectory + self.country + "/" + company["symbol"] + ".csv", 'wb').write(r.content)
 
     def DownloadAllHistorical(self):
         if not (os.path.exists(self.HistoricalDirectory)):
-            os.mkdir(self.HistoricalDirectory)
+            os.makedirs(self.HistoricalDirectory, exist_ok=True)
             os.mkdir(self.HistoricalDirectory + self.country + "/")
 
         for company in self.dataBase.values():
