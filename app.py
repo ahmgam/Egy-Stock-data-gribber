@@ -1,16 +1,6 @@
-from bs4 import BeautifulSoup
-import requests
-import datetime
-import os
-from dicttoxml import dicttoxml
-from xml.dom.minidom import parseString
-import xmltodict
-from tabulate import tabulate
-import pandas as pd
-
 class MubasherAPI :
   def __init__ (self,country):
-    self.ROOT = "./data/"
+    self.ROOT = "/content/"
     self.HostURL= "http://www.mubasher.info"
     self.CompaniesAPI="/api/1/listed-companies"
     self.PricesAPI = "/api/1/stocks/prices/all"
@@ -40,7 +30,7 @@ class MubasherAPI :
       response = r.json()
       allPages =int(response["numberOfPages"])
       for i in range(len(response["rows"])):
-        
+
         company=response["rows"][i]
         print("importing companies :" + str(i+currentPage*pageSize)+"/"+str(companiesNumber))
         dataElement = {"name":company["name"],
@@ -54,7 +44,7 @@ class MubasherAPI :
       os.makedirs(self.CompaniesDirectory, exist_ok=True)
     with open(self.outputFile , "w") as file_object:
       file_object.write(xmlData)
-    
+
     print("Import complete, saved to : "+self.outputFile )
 
   def DownloadHistorical(self,company):
@@ -71,9 +61,9 @@ class MubasherAPI :
 
     for company in self.dataBase.values():
       self.DownloadHistorical(company)
-      
+
       print(company["symbol"]+" data downloaded")
-    
+
     print("All historical data downloaded successfully to "+ self.HistoricalDirectory)
     self.dataDownloaded=True
 
@@ -162,14 +152,13 @@ class MubasherAPI :
     lower_index =lower_index.index[0]
     return Data[lower_index:higher_index].values.tolist()
 
-  def _GetCompanyByCode(self, code, no_assert=False):
-    if code in self.dataBase:  # Use 'in' directly on the dictionary
-        return self.dataBase[code]
-    if no_assert:
-        return None
-    assert print("Invalid company code, please enter a valid company code")
 
-    
+  def _GetCompanyByCode(self,code,no_assert=False):
+    if code in self.dataBase.keys():
+      return self.dataBase[code]
+    if no_assert:
+      return None
+    assert print("Invalid company code, please enter a valid company code")
   def _FormatDate ( self,dateToFormat):
 
     dateArray = dateToFormat.split("-")
@@ -227,9 +216,6 @@ class MubasherAPI :
       else:
         df = df.append(pd.Series(price, name=data['date']), ignore_index=True)
       df.to_csv(self.HistoricalDirectory+self.country+"/"+code+".csv", index=False)
-
-
-    print("Companies updated successfully.")
 
 
 if __name__ == "__main__":
