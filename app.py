@@ -53,7 +53,7 @@ class MubasherAPI :
         with open(self.outputFile, "w") as file_object:
             file_object.write(xmlData)
 
-    print("Import complete, saved to : " + self.outputFile)
+        print("Import complete, saved to : " + self.outputFile)
 
     def DownloadHistorical(self, company):
         if not (os.path.exists(self.HistoricalDirectory)):
