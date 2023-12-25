@@ -1,6 +1,6 @@
 class MubasherAPI :
   def __init__ (self,country):
-    self.ROOT = "/content/"
+    self.ROOT = "/data/"
     self.HostURL= "http://www.mubasher.info"
     self.CompaniesAPI="/api/1/listed-companies"
     self.PricesAPI = "/api/1/stocks/prices/all"
